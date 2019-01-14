@@ -1,1 +1,1 @@
-# edi-highlight
+# edi-lighter
