@@ -1,14 +1,14 @@
 (function (global, factory) {
-    function highlight(holder, data) {
+    function ediLighter(holder, data, settings) {
         const holderElement = document.getElementById(holder);
-        const highlighter = factory();
+        const ediLighter = factory();
 
-        const render = highlighter.init();
+        const render = ediLighter.init(settings);
 
         holderElement.appendChild(render(data));
     }
 
-    global.highlight = highlight;
+    global.ediLighter = ediLighter;
 }(this, function () {
     'use strict';
 
@@ -18,6 +18,8 @@
 
         classLighter: 'lighter',
         classLine: 'line',
+        classLineNumberBlock: 'line-number-block',
+        classLineNumber: 'line-number',
         classNode: 'node',
         classSegment: 'segment',
         classDataElement: 'data',
@@ -31,6 +33,9 @@
     };
 
     const highlighter = {
+        defaultSettings: {
+            lineNumber: true
+        },
         createElement: function (tagName, cssClass, style) {
             const containerElement = document.createElement(tagName);
 
@@ -58,8 +63,9 @@
         trim: function (text) {
             return (text || '').replace(/^(\s|\u00A0)+|(\s|\u00A0)+$/g, '');
         },
-        init: function () {
+        init: function (userSettings = {}) {
             const _this = this;
+            Object.assign(_this.defaultSettings, userSettings);
 
             function createNodeElement(tag, text, cssClass, style) {
                 const mark = _this.createElement(tag || 'span', cssClass, style);
@@ -91,7 +97,7 @@
                         let cssClassOfDataNode = [ constants.classDataElement ];
 
                         // test whether it's a number
-                        if (/^\d+/.test(text)) {
+                        if (/^\d+$/.test(text)) {
                             cssClassOfDataNode.push(constants.classDataElementNumber);
                         } else if  (/^[a-zA-Z]+$/.test(text)) { // is it a word ?
                             cssClassOfDataNode.push(constants.classDataElementWord);
@@ -117,10 +123,17 @@
 
                 const lines = data.split(constants.endLine);
 
+                const cssClassEachLine = [ constants.classLine ];
+                
+                if (!!(_this.defaultSettings.lineNumber)) {
+                    container.classList.add(constants.classLineNumberBlock);
+                    cssClassEachLine.push(constants.classLineNumber);
+                }
+
                 let i = 0;
                 let n = lines.length - 1;
                 for (i; i < n; i++) {
-                    let oneLine = _this.createElement('div', constants.classLine);
+                    let oneLine = _this.createElement('div', cssClassEachLine);
 
                     oneLine.appendChild(renderNode(lines[i], i));
 
