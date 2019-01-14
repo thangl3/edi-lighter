@@ -13,22 +13,32 @@
     'use strict';
 
     const constants = {
+        endLine: '~',
+        splitDataElement: '*',
 
+        classLighter: 'lighter',
+        classLine: 'line',
+        classNode: 'node',
+        classSegment: 'segment',
+        classDataElement: 'data',
+        classDataElementNumber: 'number',
+        classDataElementWord: 'string',
+        classDataElementMixed: 'mixed',
+        classSplitDataElement: 'split',
+        classEndLine: 'end-line',
+        classNull: 'empty-data',
+        classBracket: 'bracket'
     };
 
     const highlighter = {
-        defaultSettings: {
-
-        },
-
         createElement: function (tagName, cssClass, style) {
             const containerElement = document.createElement(tagName);
 
             // set attribute
             if (cssClass) {
                 if (cssClass instanceof Array) {
-                    let i, n;
-                    for (i = 0; i < (n = cssClass.length); i++) {
+                    let i, n = cssClass.length;
+                    for (i = 0; i < n; i++) {
                         containerElement.classList.add(cssClass[i]);
                     }
                 } else {
@@ -42,27 +52,17 @@
 
             return containerElement;
         },
-
-        createTextNode: function (text, cssClass) {
+        createTextNode: function (text) {
             return document.createTextNode(text || '');     
         },
-
-        setSyntax: function (syntax) {
-            if (typeof syntax === 'object') {
-
-            }
+        trim: function (text) {
+            return (text || '').replace(/^(\s|\u00A0)+|(\s|\u00A0)+$/g, '');
         },
-
-        getSyntax: function () {
-
-        },
-
-        init: function (userSettings) {
-            Object.assign(this.defaultSettings, userSettings || {});
+        init: function () {
             const _this = this;
 
-            function createNodeElement(tag, text) {
-                const mark = _this.createElement(tag || 'span');
+            function createNodeElement(tag, text, cssClass, style) {
+                const mark = _this.createElement(tag || 'span', cssClass, style);
 
                 mark.appendChild(_this.createTextNode(text));
 
@@ -70,48 +70,61 @@
             }
 
             function renderNode(line, lineOfNumber) {
-                const pElement = _this.createElement('p');
+                const node = _this.createElement('p', constants.classNode);
 
-                const elementsOfLine = line.split('*');
+                const elementsOfLine = line.split(constants.splitDataElement);
 
                 // start of a line node EDI
-                let segmentElement = createNodeElement(null, elementsOfLine[0]);
-                pElement.appendChild(segmentElement);
+                let segmentElement = createNodeElement(null, elementsOfLine[0], constants.classSegment);
+                node.appendChild(segmentElement);
 
                 let i = 1;
                 let n = elementsOfLine.length - 1;
                 while (i <= n) {
-                    if (i === n) {
-                        if (lineOfNumber === 0) {
+                    let text = elementsOfLine[i];
 
-                        } else {
-
-                        }
+                    if (lineOfNumber === 0 && i === n) {
+                        node.appendChild(createNodeElement(null, text, [ constants.classDataElement, constants.classBracket ]));
                     } else {
+                        node.appendChild(createNodeElement(null, constants.splitDataElement, constants.classSplitDataElement));
 
+                        let cssClassOfDataNode = [ constants.classDataElement ];
+
+                        // test whether it's a number
+                        if (/^\d+/.test(text)) {
+                            cssClassOfDataNode.push(constants.classDataElementNumber);
+                        } else if  (/^[a-zA-Z]+$/.test(text)) { // is it a word ?
+                            cssClassOfDataNode.push(constants.classDataElementWord);
+                        } else { // this a mixed string (includes word and number)
+                            cssClassOfDataNode.push(constants.classDataElementMixed);
+                        }
+
+                        node.appendChild(createNodeElement(null, text, cssClassOfDataNode));
                     }
-
+                    
                     i++;
                 }
 
-                // end
-                const endElement = createNodeElement(null, '~');
-                pElement.appendChild(endElement);
+                // end '~'
+                const endElement = createNodeElement(null, constants.endLine, constants.classEndLine);
+                node.appendChild(endElement);
 
-                return pElement;
+                return node;
             }
 
             function render(data) {
-                const container = _this.createElement('div');
-                //container.appendChild(_this.createMarkElement(data));
+                const container = _this.createElement('div', constants.classLighter);
 
-                const lineRegex = /(.+?)\~/gm;
-                
-                const lines = data.match(lineRegex);
+                const lines = data.split(constants.endLine);
 
-                let i, n;
-                for (i = 0; i < (n = lines.length); i++) {
-                    container.appendChild(renderNode(lines[i]), i);
+                let i = 0;
+                let n = lines.length - 1;
+                for (i; i < n; i++) {
+                    let oneLine = _this.createElement('div', constants.classLine);
+
+                    oneLine.appendChild(renderNode(lines[i], i));
+
+                    container.appendChild(oneLine);
                 }
 
                 return container;
