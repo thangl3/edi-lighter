@@ -1,9 +1,10 @@
 (function (global, factory) {
+    const lighter = factory();
+
     function ediLighter(holder, data, settings) {
         const holderElement = document.getElementById(holder);
-        const ediLighter = factory();
 
-        const render = ediLighter.init(settings);
+        const render = lighter(settings);
 
         holderElement.appendChild(render(data));
     }
@@ -32,23 +33,25 @@
         classBracket: 'bracket'
     };
 
-    const highlighter = {
-        defaultSettings: {
-            lineNumber: true
-        },
-        createElement: function (tagName, cssClass, style) {
+    const lighter = function (userSettings = {}) {
+        const defaultSettings = {
+            lineNumber: true,
+        };
+
+        Object.assign(defaultSettings, userSettings);
+
+        function _createElement(tagName, cssClass, style) {
             const containerElement = document.createElement(tagName);
 
             // set attribute
-            if (cssClass) {
-                if (cssClass instanceof Array) {
-                    let i, n = cssClass.length;
-                    for (i = 0; i < n; i++) {
-                        containerElement.classList.add(cssClass[i]);
-                    }
-                } else {
-                    containerElement.className = cssClass;
+            if (Array.isArray(cssClass)) {
+                const n = cssClass.length;
+                let i = 0;
+                for (i; i < n; i++) {
+                    containerElement.classList.add(cssClass[i]);
                 }
+            } else {
+                containerElement.className = cssClass;
             }
 
             if (style) {
@@ -56,45 +59,45 @@
             }
 
             return containerElement;
-        },
-        createTextNode: function (text) {
-            return document.createTextNode(text || '');     
-        },
-        trim: function (text) {
+        }
+
+        function _createTextNode(text) {
+            return document.createTextNode(text || '');
+        }
+
+        function _trim(text) {
             return (text || '').replace(/^(\s|\u00A0)+|(\s|\u00A0)+$/g, '');
-        },
-        init: function (userSettings = {}) {
-            const _this = this;
-            Object.assign(_this.defaultSettings, userSettings);
+        }
 
+        function render(ediData) {
             function createNodeElement(tag, text, cssClass, style) {
-                const mark = _this.createElement(tag || 'span', cssClass, style);
+                const mark = _createElement(tag || 'span', cssClass, style);
 
-                mark.appendChild(_this.createTextNode(text));
+                mark.appendChild(_createTextNode(text));
 
                 return mark;
             }
 
             function renderNode(line, lineOfNumber) {
-                const node = _this.createElement('p', constants.classNode);
+                const node = _createElement('p', constants.classNode);
 
                 const elementsOfLine = line.split(constants.splitDataElement);
 
                 // start of a line node EDI
-                let segmentElement = createNodeElement(null, elementsOfLine[0], constants.classSegment);
-                node.appendChild(segmentElement);
+                node.appendChild(createNodeElement(null, elementsOfLine[0], constants.classSegment));
 
+                const n = elementsOfLine.length - 1;
                 let i = 1;
-                let n = elementsOfLine.length - 1;
+
                 while (i <= n) {
-                    let text = elementsOfLine[i];
+                    const text = elementsOfLine[i];
 
                     if (lineOfNumber === 0 && i === n) {
-                        node.appendChild(createNodeElement(null, text, [ constants.classDataElement, constants.classBracket ]));
+                        node.appendChild(createNodeElement(null, text, [constants.classDataElement, constants.classBracket]));
                     } else {
                         node.appendChild(createNodeElement(null, constants.splitDataElement, constants.classSplitDataElement));
 
-                        let cssClassOfDataNode = [ constants.classDataElement ];
+                        const cssClassOfDataNode = [constants.classDataElement];
 
                         // test whether it's a number
                         if (/^\d+$/.test(text)) {
@@ -107,45 +110,42 @@
 
                         node.appendChild(createNodeElement(null, text, cssClassOfDataNode));
                     }
-                    
-                    i++;
+
+                    ++i;
                 }
 
                 // end '~'
-                const endElement = createNodeElement(null, constants.endLine, constants.classEndLine);
-                node.appendChild(endElement);
+                node.appendChild(createNodeElement(null, constants.endLine, constants.classEndLine));
 
                 return node;
             }
 
-            function render(data) {
-                const container = _this.createElement('div', constants.classLighter);
+            const container = _createElement('div', constants.classLighter);
 
-                const lines = data.split(constants.endLine);
+            const lines = ediData.split(constants.endLine);
 
-                const cssClassEachLine = [ constants.classLine ];
-                
-                if (!!(_this.defaultSettings.lineNumber)) {
-                    container.classList.add(constants.classLineNumberBlock);
-                    cssClassEachLine.push(constants.classLineNumber);
-                }
+            const cssClassEachLine = [constants.classLine];
 
-                let i = 0;
-                let n = lines.length - 1;
-                for (i; i < n; i++) {
-                    let oneLine = _this.createElement('div', cssClassEachLine);
-
-                    oneLine.appendChild(renderNode(lines[i], i));
-
-                    container.appendChild(oneLine);
-                }
-
-                return container;
+            if (defaultSettings.lineNumber === true) {
+                container.classList.add(constants.classLineNumberBlock);
+                cssClassEachLine.push(constants.classLineNumber);
             }
 
-            return render;
+            let i = 0;
+            let n = lines.length - 1;
+            for (i; i < n; ++i) {
+                let oneLine = _createElement('div', cssClassEachLine);
+
+                oneLine.appendChild(renderNode(lines[i], i));
+
+                container.appendChild(oneLine);
+            }
+
+            return container;
         }
+
+        return render;
     };
 
-    return highlighter;
+    return lighter;
 }));
