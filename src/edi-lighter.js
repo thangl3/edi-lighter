@@ -10,7 +10,7 @@
     }
 
     global.ediLighter = ediLighter;
-}(this, function () {
+}(window, function () {
     'use strict';
 
     const constants = {
