@@ -1,1 +1,0 @@
-ediLighter('view-edi', document.querySelector('#data-edi').value, { lineNumber: false });

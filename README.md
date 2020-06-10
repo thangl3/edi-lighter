@@ -1,4 +1,4 @@
-# EDI-lighter
+# edi-lighter
 
 ## Why you should you it for display EDI data
 
@@ -16,12 +16,16 @@ You need to create a holder element contain the result.
 
 And in script tag call to method `ediLighter` to use.
 
-```javascript
-let holderElement = document.querySelector('#view-edi');
-let ediData = 'it can be get from ajax or ... anywhere';
+```js
+const holderElement = document.querySelector('#view-edi');
+const ediData = 'it can be get from ajax or ... anywhere';
 
 // lineNumber is true this mean you want to show the line number in the left of holder
 ediLighter(holderElement, ediData, { lineNumber: true });
 ```
 
-Run the example to see the demo.
+## How to test it
+
+1. After clone and install all dependencies, you run command `npm run dev`
+2. The browser will opens link `localhost:3000`, click on link with prefix `.html`
+3. See you document formatted.
