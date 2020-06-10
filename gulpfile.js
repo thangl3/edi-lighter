@@ -7,6 +7,9 @@ const inject = require('gulp-inject');
 const del = require('del');
 const injectSeries = require('stream-series');
 const browserSync = require('browser-sync').create();
+const sass = require('gulp-sass');
+
+sass.compiler = require('node-sass');
 
 function clear() {
   return del(['dist/**']);
@@ -21,7 +24,8 @@ function streamJsTask() {
 }
 
 function streamCssTask() {
-  return src('themes/*.css')
+  return src('themes/*.{css,scss}')
+    .pipe(sass())
     .pipe(cleanCSS())
     .pipe(rename({ extname: '.min.css' }))
     .pipe(dest('dist/'));
@@ -41,26 +45,65 @@ function injectTask() {
       inject(
         injectSeries(streamCssTask(), streamJsTask(), streamJsTestTask()),
         {
-          relative: true
-        }
+          relative: false,
+          transform: function (filePath, file, index, length, targetFile) {
+            if (/(.+?)\.js/.test(file.basename)) {
+              return inject.transform.apply(inject.transform, arguments);
+            }
+
+            const cssFilenames = file.basename.match(/(.+?)\.min.css/);
+
+            if (cssFilenames && targetFile.basename.indexOf(cssFilenames[1]) !== -1) {
+              return inject.transform.apply(inject.transform, arguments);
+            }
+
+            // const htmlFilenames = file.basename.match(/(.+?)\.html/);
+            // if (htmlFilenames && htmlFilenames[1]) {
+            //   return inject.transform.apply(inject.transform, arguments);
+            // }
+          },
+        },
       )
     )
     .pipe(dest('dist/'));
 }
 
 function dev() {
+  clear();
+  injectTask();
+
   browserSync.init({
     server: {
       baseDir: 'dist',
       directory: true,
     },
-    serveStatic: [{ route: 'dist', dir: './dist' }],
+    serveStatic: [{ route: 'dist', dir: ['./dist', './data'] }],
   });
-  watch('themes/*.css', series(clear, injectTask)).on('change', browserSync.reload);
+  watch('themes/*.{css,scss}', series(clear, injectTask)).on('change', browserSync.reload);
   watch('test/*.*', series(clear, injectTask)).on('change', browserSync.reload);
   watch('src/*.js', series(clear, injectTask)).on('change', browserSync.reload);
 }
 
-exports.default = series(clear, parallel(streamCssTask, streamJsTask));
-exports.test = series(clear, injectTask);
+function clearBuild() {
+  return del(['build/**']);
+}
+
+function buildJsTask() {
+  return src('src/*.js')
+    .pipe(babel())
+    .pipe(uglify())
+    .pipe(rename({ extname: '.min.js' }))
+    .pipe(dest('build/'));
+}
+
+function buildCssTask() {
+  return src('themes/*.{css,scss}')
+    .pipe(sass())
+    .pipe(cleanCSS())
+    .pipe(rename({ extname: '.min.css' }))
+    .pipe(dest('build/'));
+}
+
+exports.default = series(clearBuild, parallel(buildCssTask, buildJsTask));
+exports.buildTest = series(clear, injectTask);
 exports.dev = dev;

@@ -1,6 +1,14 @@
 (function () {
   const holderElm = document.getElementById('view-edi');
-  const ediData = document.querySelector('#data-edi').value;
 
-  ediLighter(holderElm, ediData, { lineNumber: false });
+  const xhr = new XMLHttpRequest();
+  xhr.onreadystatechange = function () {
+    if (xhr.readyState === 4) {
+      const ediData = xhr.responseText;
+
+      ediLighter(holderElm, ediData, { lineNumber: false });
+    }
+  };
+  xhr.open('GET', '/dist/data-example.edi810');
+  xhr.send();
 }());
