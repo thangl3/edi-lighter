@@ -41,7 +41,7 @@
     classBracket: 'bracket'
   };
 
-  const ediLighter = function (userSettings = {}) {
+  const ediLighter = (userSettings = {}) => {
     const defaultSettings = {
       lineNumber: true,
     };
@@ -77,7 +77,7 @@
       return (text || '').replace(/^(\s|\u00A0)+|(\s|\u00A0)+$/g, '');
     }
 
-    function render(ediData) {
+    const render = (ediData) => {
       function createNodeElement(tag, text, cssClass, style) {
         const mark = _createElement(tag || 'span', cssClass, style);
 
@@ -150,7 +150,7 @@
       }
 
       return container;
-    }
+    };
 
     return render;
   };
