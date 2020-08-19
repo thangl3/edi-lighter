@@ -1,6 +1,6 @@
 @import url('https://fonts.googleapis.com/css?family=Cutive+Mono');
 
-.lighter {
+.edi-lighter {
   font-family: 'Cutive Mono', monospace;
   padding-left: 15px;
   padding-right: 15px;
@@ -63,4 +63,18 @@
 
     }
   }
+
+  // .btn-copy {
+  //   font-size: 1.2rem;
+  //   position: fixed;
+  //   right: 20px;
+  //   opacity: 0;
+  //   transition: opacity .2s ease-in;
+
+  //   &:hover {
+  //     color: #cc2a41;
+  //     opacity: 1;
+  //     cursor: pointer;
+  //   }
+  // }
 }

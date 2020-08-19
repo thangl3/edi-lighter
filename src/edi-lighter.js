@@ -25,7 +25,7 @@
     endLine: '~',
     splitDataElement: '*',
 
-    classLighter: 'lighter',
+    classLighter: 'edi-lighter',
     classLine: 'line',
     classLineNumberBlock: 'line-number-block',
     classLineNumber: 'line-number',
@@ -38,12 +38,15 @@
     classSplitDataElement: 'split',
     classEndLine: 'end-line',
     classNull: 'empty-data',
-    classBracket: 'bracket'
+    classBracket: 'bracket',
+
+    classBtnClone: 'btn-copy',
   };
 
   const ediLighter = (userSettings = {}) => {
     const defaultSettings = {
-      lineNumber: true,
+      lineNumber: false,
+      // canCopy: true,
     };
 
     Object.assign(defaultSettings, userSettings);
@@ -129,6 +132,17 @@
       }
 
       const container = _createElement('div', constants.classLighter);
+
+      // if (defaultSettings.canCopy) {
+      //   const btnCopy = _createElement('span', constants.classBtnClone);
+      //   btnCopy.appendChild(_createElement('i', 'fa fa-clone'));
+
+      //   btnCopy.onclick = function () {
+      //     toggleElement(this);
+      //   }
+
+      //   container.appendChild(btnCopy);
+      // }
 
       const lines = ediData.split(constants.endLine);
 

@@ -6,7 +6,7 @@
     if (xhr.readyState === 4) {
       const ediData = xhr.responseText;
 
-      ediLighter(holderElm, ediData, { lineNumber: false });
+      ediLighter(holderElm, ediData, { lineNumber: true });
     }
   };
   xhr.open('GET', '/dist/data-example.edi810');
